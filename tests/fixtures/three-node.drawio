@@ -1,0 +1,30 @@
+<mxfile>
+  <diagram id="prototype-page" name="Prototype">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="850" pageHeight="1100">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="client" value="Client" vertex="1" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+          <mxGeometry x="60" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="API" vertex="1" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+          <mxGeometry x="290" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="PostgreSQL" vertex="1" parent="1"
+          style="shape=cylinder3;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;">
+          <mxGeometry x="520" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="client-api" edge="1" parent="1" source="client" target="api"
+          style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;html=0;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="api-db" edge="1" parent="1" source="api" target="db"
+          style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;html=0;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
