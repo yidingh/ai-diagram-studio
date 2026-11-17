@@ -29,3 +29,6 @@ PROGRESS.md
 .cursor/
 .claude/
 .superpowers/
+
+playwright-report/
+test-results/

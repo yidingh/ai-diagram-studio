@@ -1,0 +1,33 @@
+<mxfile>
+  <diagram id="prototype-page" name="Prototype">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="850" pageHeight="1100">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="client" value="Client" vertex="1" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+          <mxGeometry x="60" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="API" vertex="1" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+          <mxGeometry x="290" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="PostgreSQL" vertex="1" parent="1"
+          style="shape=cylinder3;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;">
+          <mxGeometry x="520" y="100" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="client-api" edge="1" parent="1" source="client" target="api"
+          style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;html=0;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="api-db" edge="1" parent="1" source="api" target="db"
+          style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;html=0;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      <mxCell id="workers" parent="1" vertex="1" style="group;" value="Workers"><mxGeometry x="290" y="290" width="300" height="160" as="geometry"/></mxCell>
+<object id="worker" label="Worker" owner="team-a"><mxCell parent="workers" vertex="1" style="rounded=1;html=0;fillColor=#d5e8d4;"><mxGeometry x="30" y="40" width="120" height="60" as="geometry"/></mxCell></object>
+<mxCell id="api-worker" parent="1" edge="1" source="api" target="worker" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="410" y="240"/><mxPoint x="380" y="270"/></Array></mxGeometry></mxCell>
+</root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

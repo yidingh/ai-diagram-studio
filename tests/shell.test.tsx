@@ -7,5 +7,7 @@ afterEach(cleanup);
 it("offers a named editor region and explains editor availability", () => {
   render(<Page />);
   expect(screen.getByRole("region", { name: "Diagram editor" })).toBeTruthy();
-  expect(screen.getByRole("status").textContent).toMatch(/editor/i);
+  expect(screen.getByText("Loading draw.io…").textContent).toMatch(
+    /Loading draw.io/,
+  );
 });

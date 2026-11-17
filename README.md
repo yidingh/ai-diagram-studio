@@ -1,114 +1,115 @@
 # AI Diagram Studio
 
-Generate editable architecture diagrams from natural-language descriptions, review
-them before applying, and refine them directly in draw.io. AI Diagram Studio is a
-focused local web application that combines model-generated diagrams with explicit
-user approval and full-document preservation.
+**Turn ideas into editable diagrams with natural language.**
 
-## Features
+AI Diagram Studio combines the flexibility of the draw.io canvas with AI-assisted creation and editing. Build a diagram from a prompt, refine an existing design, and review proposed changes before applying them—all in one workspace.
 
-- Generate small architecture diagrams with labeled nodes and directed connectors.
-- Review a validated candidate before applying, downloading, or discarding it.
-- Continue editing the current diagram while generation is running.
-- Preserve a fresh outgoing snapshot before replacement and verify the loaded result.
-- Restore the previous version, including manual shapes, styles, and geometry.
-- Capture, reload, and download editable `.drawio` XML.
-- Cancel generation and retry explicitly, with deadlines and stale-response protection.
+Built with **Next.js, React, TypeScript, and the OpenAI Responses API**.
 
-## Architecture
+## Highlights
 
-The application uses Next.js, React, and TypeScript. An embedded diagrams.net
-editor supplies the drawing interface. The server uses the OpenAI Responses API;
-Zod validates JSON contracts, saxes parses XML, and xmlbuilder2 assembles documents.
-Vitest, Testing Library, and jsdom provide automated tests.
-
-```mermaid
-flowchart LR
-    Prompt[Browser prompt] --> API[Next.js API route]
-    API --> Model[One model call]
-    Model --> Validation[Validate fragments and assemble XML]
-    Validation --> Candidate[Review candidate]
-    Candidate -->|Explicit Apply| Replace[Capture outgoing XML, load, verify]
-    Replace --> Editor[Manual editing and download]
-```
-
-The API route owns credentials and provider integration. Framework-independent
-functions handle generation orchestration, XML validation, and document-state
-transitions. The browser coordinates candidates and history; the iframe owns the
-live drawing. Full editor XML remains the source of truth, so manual work is not
-reconstructed from a simplified graph.
-
-## Engineering decisions
-
-**Validate before replacement.** Model output is untrusted. Generated cells must
-satisfy limits on IDs, references, geometry, styles, labels, and document size.
-The application supplies the document shell and validates the serialized result.
-Invalid or partial output is rejected without an automatic repair loop.
-
-**Separate generation from preservation.** Generated diagrams use a narrow
-allowlist. Manual editing can introduce richer draw.io content, which follows
-separate preservation checks. Supported manual XML is retained intact.
-
-**Verify Apply and Restore.** Replacement briefly blocks editor interaction,
-captures and retains the latest outgoing XML, loads the target, and compares a
-fresh export with the intended document. History changes only after verification.
-An uncertain load retains recovery XML and requires an editor retry. Restore also
-saves its outgoing version, making a single restore reversible.
-
-**Bound asynchronous work.** Generation has a 45-second server budget and a
-50-second browser budget. Provider retries are disabled. Request ownership prevents
-late responses or cleanup from changing a newer attempt. Editor messages are
-filtered by origin and iframe window; timed-out sessions are invalidated.
+- **Natural-language diagramming** — Create diagrams and update labels, styles, layouts, and connections through conversational prompts.
+- **Visual context** — Combine the current canvas with optional reference images to guide AI suggestions.
+- **Review and apply** — Inspect proposed changes and choose when to apply them to your diagram.
+- **Full canvas editing** — Use draw.io's familiar tools alongside AI assistance for precise control.
+- **Thoughtful recovery** — Continue from tab-scoped drafts and restore the previous diagram with a dedicated AI undo action.
+- **Portable files** — Import existing diagrams and download editable `.drawio` files.
 
 ## Getting started
 
-Requirements: Node.js 24, npm, internet access for the hosted diagrams.net editor,
-and an OpenAI API key for generation. `.nvmrc` pins the Node version.
+Use **Node.js 24**, as specified in `.nvmrc`.
 
 ```sh
-nvm install
-nvm use
 npm ci
-cp .env.example .env.local
-```
-
-Set `OPENAI_API_KEY` in `.env.local`, then start the application:
-
-```sh
 npm run dev
 ```
 
-Open <http://127.0.0.1:3000>. Describe a system, generate a candidate, and select
-Apply when ready. Make manual edits in the embedded editor, then use Download to
-save them. The key stays on the server; never use a `NEXT_PUBLIC_` variable for it
-or commit `.env.local`. Generation uses your provider account and may incur charges.
-Manual editing and deterministic tests do not require a key.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) to start diagramming.
 
-## Verification
+To enable AI assistance, open **Settings** and enter your OpenAI API key. AI requests use your account's API billing. The workspace connects to the hosted draw.io editor and OpenAI over the internet.
+
+### Model configuration
+
+The default model is `gpt-6-luna`. To configure another model, copy the example environment file:
+
+```sh
+cp .env.example .env.local
+```
+
+Set `OPENAI_MODEL` to a model that supports image inputs and the structured response format used in `lib/ai/propose.ts`.
+
+## A typical workflow
+
+1. Start with a blank canvas or import an existing diagram through draw.io's **File** menu.
+2. Describe your idea or an update, such as “Add a cache between the API server and database.”
+3. Attach reference images when additional visual context is useful.
+4. Review the proposal and apply the changes when ready.
+5. Save your work as an editable `.drawio` file through **Files and recovery → Download .drawio**.
+
+The dedicated **Undo AI change** action restores the latest pre-apply snapshot, and tab-scoped recovery helps you resume work after a refresh.
+
+## Engineering approach
+
+AI Diagram Studio pairs structured AI output with a deterministic diagram editing engine. The browser captures diagram XML and a matching canvas image; the server uses both to produce a proposal grounded in the current document.
+
+Each proposal contains explicit operations to update, add, replace, or remove diagram elements. The server validates the complete batch, constructs a candidate document, and derives a change summary from the result. The browser checks for intervening edits before applying the proposal and verifies the loaded document afterward.
+
+This workflow brings together multimodal AI, structured validation, document preservation, and user-controlled editing.
+
+| Area | Responsibility |
+| --- | --- |
+| `components/DiagramWorkspace.tsx` | Workspace state, proposal lifecycle, recovery, and AI undo |
+| `components/DrawioEditor.tsx` | Embedded draw.io integration |
+| `components/AiPanel.tsx` | Prompts, image references, proposal review, and settings |
+| `app/api/propose/route.ts` | Request validation and proposal orchestration |
+| `lib/ai/` | OpenAI integration and image validation |
+| `lib/diagram/` | XML parsing, structured changes, and content validation |
+| `lib/drawio/` | Editor messaging, snapshots, and file downloads |
+| `lib/tab-storage.ts` | Tab-scoped settings and recovery records |
+| `tests/` | Unit, component, and browser coverage |
+
+## Data handling
+
+API keys and draft recovery records use tab-scoped browser session storage. API keys pass through the application server to OpenAI and remain separate from the embedded draw.io editor.
+
+AI requests include the prompt, diagram XML, canvas snapshot, and any selected reference images. The application processes this content without persisting it on the server and sets `store: false` on OpenAI requests. Downloaded `.drawio` files provide a durable copy of your work.
+
+## Development
+
+Run the project checks locally:
 
 ```sh
 npm test
 npm run typecheck
 npm run build
+npm run format:check
 ```
 
-After building, `npm start` runs the production server locally. The automated suite
-covers validation, escaped text, rich-document preservation, API errors, request
-cancellation, duplicate actions, stale responses, replacement verification, and
-failure recovery. Tests use controlled iframe messages and mocked provider
-responses; they do not establish compatibility with the live hosted editor or
-prove model quality.
+Install Chromium and run the browser suite:
 
-## Limitations
+```sh
+npx playwright install chromium
+npm run test:browser
+```
 
-This is a local prototype, not a hosted multi-user service. History exists only in
-memory and is lost on a full-page refresh; download work you want to retain.
-Generation supports one page with 3–12 nodes and at most 24 directed edges.
-Multi-page recovery is unsupported, although safely bounded multi-page XML can be
-downloaded intact. Structural validation does not guarantee a correct architecture
-or readable layout. The editor requires an external service, and cancellation
-cannot guarantee that already-started model usage is unbilled.
+The browser suite uses a controlled editor iframe and mocked AI responses for repeatable verification. Set `PLAYWRIGHT_CHROME=1` to use installed Chrome, or `TEST_HOSTED_EDITOR=1` to include the hosted-editor integration test.
+
+GitHub Actions runs unit tests, type checking, a production build, browser tests, and formatting checks.
+
+## Deployment
+
+Deploy as a Next.js application using Node.js 24:
+
+```sh
+npm ci
+npm run build
+npm start
+```
+
+Configure `OPENAI_MODEL` as needed. Each visitor supplies an OpenAI API key through Settings, while draft recovery stays in the browser. The proposal endpoint is stateless, enabling deployment without a diagram database.
+
+For public hosting, configure provider-level rate limiting for `POST /api/propose` and support the route's declared 50-second execution window.
 
 ## License
 
-[MIT](LICENSE).
+Released under the [MIT License](LICENSE).
